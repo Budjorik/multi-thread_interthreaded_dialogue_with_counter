@@ -1,32 +1,40 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.*;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        final int SIZE_THREAD_POOL = 4;
-        final int MAX_MESSAGES = 3;
-        Callable<Integer>[] myCallablesArray = createMyCallablesArray(SIZE_THREAD_POOL,
+        final int SIZE_THREAD_POOL = 5;
+        final int MAX_MESSAGES = 4;
+        List<Callable<Integer>> newMyCallablesCollection = createMyCallablesCollection(SIZE_THREAD_POOL,
                 "поток", MAX_MESSAGES);
         final ExecutorService threadPool = Executors.newFixedThreadPool(SIZE_THREAD_POOL);
-        Future<Integer> totalCountMessages = null;
-        for (int i = 0 ; i < myCallablesArray.length ; i++) {
-            totalCountMessages = threadPool.submit(myCallablesArray[i]);
-        }
-        final Integer resultOfTotalCountMessages = totalCountMessages.get();
+        List<Future<Integer>> totalCountMessages = threadPool.invokeAll(newMyCallablesCollection);
+        Integer resultOfTotalCountMessages = toGetResult(totalCountMessages);
         System.out.println("Общее количество выведенных сообщений = " + resultOfTotalCountMessages);
         threadPool.shutdown();
     }
 
-    public static Callable<Integer>[] createMyCallablesArray(int sizeArray,
+    public static List<Callable<Integer>> createMyCallablesCollection(int sizeCollection,
                                                              String myCallablePreName,
                                                              int maxMessages) {
-        Callable<Integer>[] newMyCallablesArray = new MyCallable[sizeArray];
-        for (int i = 0 ; i < newMyCallablesArray.length ; i++) {
+        List<Callable<Integer>> newMyCallablesCollection = new ArrayList<>();
+        for (int i = 0; i < sizeCollection; i++) {
             String name = myCallablePreName + " " + (i + 1);
-            Callable<Integer> myCallable = new MyCallable(name, maxMessages);
-            newMyCallablesArray[i] = myCallable;
+            MyCallable myCallable = new MyCallable(name, maxMessages);
+            newMyCallablesCollection.add(myCallable);
         }
         System.out.println("Потоки успешно созданы!");
-        return newMyCallablesArray;
+        return newMyCallablesCollection;
+    }
+
+    public static Integer toGetResult(List<Future<Integer>> totalCountMessages)
+            throws ExecutionException, InterruptedException {
+        Integer result = 0;
+        for (int i = 0 ; i < totalCountMessages.size() ; i++) {
+            result = Math.max(result, totalCountMessages.get(i).get());
+        }
+        return result;
     }
 
 }
