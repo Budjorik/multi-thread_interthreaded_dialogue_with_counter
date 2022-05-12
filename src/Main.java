@@ -9,9 +9,13 @@ public class Main {
         List<Callable<Integer>> newMyCallablesCollection = createMyCallablesCollection(SIZE_THREAD_POOL,
                 "поток", MAX_MESSAGES);
         final ExecutorService threadPool = Executors.newFixedThreadPool(SIZE_THREAD_POOL);
+        // Получение количества сообщений от всех задач
         List<Future<Integer>> totalCountMessages = threadPool.invokeAll(newMyCallablesCollection);
         Integer resultOfTotalCountMessages = toGetResult(totalCountMessages);
-        System.out.println("Общее количество выведенных сообщений = " + resultOfTotalCountMessages);
+        System.out.println("Общее количество выведенных сообщений всех задач = " + resultOfTotalCountMessages);
+        // Получение количества сообщений от самой быстрой задачи
+//        Integer resultOfTotalCountMessage = threadPool.invokeAny(newMyCallablesCollection);
+//        System.out.println("Количество выведенных сообщений самой быстрой задачи = " + resultOfTotalCountMessage);
         threadPool.shutdown();
     }
 
